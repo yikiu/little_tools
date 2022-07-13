@@ -1,4 +1,5 @@
 import pathlib
+import imghdr
 
 
 base = 0xFF
@@ -12,7 +13,7 @@ pngB = 0x50
 def convert(src_dir: pathlib.Path, dest_dir: pathlib.Path):
     """
     微信电脑端存储的图像为经过加密的dat文件，不能被图像软件识别。本函数将指定目录下的dat文件进行转换为正常的图像。
-    :param src_dir:微信图像保存目录：xxx\WeChat Files\xxx\FileStorage\Image.
+    :param src_dir:微信图像保存目录：xxx/WeChat Files/xxx/FileStorage/Image.
     :param dest_dir:保存到的目的目录
     """
     for p in src_dir.iterdir():
@@ -23,7 +24,7 @@ def convert(src_dir: pathlib.Path, dest_dir: pathlib.Path):
         elif p.is_file() and p.suffix == '.dat':
             if not dest_dir.exists():
                 dest_dir.mkdir(parents=True)
-            d = dest_dir.joinpath(p.stem+'.jpg')
+            d = dest_dir.joinpath(p.stem)
             print(p)
             convert_file(p, d)
 
@@ -55,3 +56,9 @@ def convert_file(src: pathlib.Path, dest: pathlib.Path):
 
         with open(dest, 'wb') as fw:
             fw.write(bytearray(map(lambda a: v ^ a, content)))
+        suffix=imghdr.what(dest)
+        if not suffix:
+            suffix='.jpg'
+        else:
+            suffix='.'+suffix
+        dest.rename(dest.with_suffix(suffix))
